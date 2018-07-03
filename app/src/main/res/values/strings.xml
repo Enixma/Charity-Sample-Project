@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Charity</string>
+    <string name="title_add_credit_card">Credit card</string>
+    <string name="title_success">Success</string>
+    <string name="label_donation_amount">Select donation amount (THB)</string>
+    <string name="alert_title_error">Error</string>
+    <string name="alert_title_confirm">Confirmation</string>
+    <string name="alert_message_confirm">Donating %1$s THB to  %2$s</string>
+    <string name="alert_message_communication_error">Network communication error</string>
+    <string name="alert_message_validate_credit_card">Validating credit card...</string>
+    <string name="alert_message_submit_donation">Submitting donation...</string>
+    <string name="alert_button_ok">OK</string>
+    <string name="alert_button_cancel">Cancel</string>
+    <string name="alert_button_donate">Donate by credit card</string>
+    <string name="message_thank_you">Thank you for donating  %1$s THB to %2$s</string>
+    <string name="message_no_data_found">No data found</string>
+    <string name="button_donate">Donate</string>
+    <string name="button_go_to_charity_list">Explore other charities</string>
+
+    <string-array name="amount_array">
+        <item>100</item>
+        <item>500</item>
+        <item>1000</item>
+        <item>2500</item>
+        <item>5000</item>
+    </string-array>
+</resources>
