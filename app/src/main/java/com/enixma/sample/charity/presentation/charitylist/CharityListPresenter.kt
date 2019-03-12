@@ -1,42 +1,51 @@
 package com.enixma.sample.charity.presentation.charitylist
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.*
+import android.util.Log
+import android.widget.Toast
 import com.enixma.sample.charity.domain.getcharitylist.GetCharityListUseCase
 import com.enixma.sample.charity.domain.getcharitylist.GetCharityListUseCaseRequest
 import com.enixma.sample.charity.domain.getcharitylist.GetCharityListUseCaseResult
-import io.reactivex.disposables.Disposable
 
 class CharityListPresenter(private val view: CharityListContract.View,
-                           private val getCharityListUseCase: GetCharityListUseCase) : CharityListContract.Action, LifecycleObserver {
+                           private val lifecycleOwner: LifecycleOwner,
+                           private val getCharityListUseCase: GetCharityListUseCase) : CharityListContract.Action {
 
-    private var getCharityListDisposable: Disposable? = null
-    private var isLoading: Boolean = false
+    private var result: LiveData<GetCharityListUseCaseResult> = MutableLiveData()
+    private var resultObserver: Observer<GetCharityListUseCaseResult>
+
+    init {
+        resultObserver = Observer<GetCharityListUseCaseResult> { result ->
+            processGetCharityListResult(result)
+        }
+    }
 
     override fun getCharityList() {
 
-        if (isLoading) {
+        if (result.value?.status == GetCharityListUseCase.STATUS.LOADING) {
             return
         }
 
-        isLoading = true
-        getCharityListDisposable = getCharityListUseCase.execute(GetCharityListUseCaseRequest())
-                .doOnNext { result -> processGetCharityListResult(result) }
-                .subscribe()
+        result = LiveDataReactiveStreams
+                .fromPublisher(getCharityListUseCase.execute(GetCharityListUseCaseRequest()))
+
+        result.observe(lifecycleOwner, resultObserver)
+
     }
 
-    private fun processGetCharityListResult(result: GetCharityListUseCaseResult) {
-        isLoading = false
-        if (result.status == GetCharityListUseCase.STATUS.SUCCESS) {
-            view.populateList(result.charityList)
-        } else {
-            view.displayNoData()
+    private fun processGetCharityListResult(result: GetCharityListUseCaseResult?) {
+        result?.let {
+            when (result.status) {
+                GetCharityListUseCase.STATUS.LOADING -> {
+                    // do nothing
+                }
+                GetCharityListUseCase.STATUS.SUCCESS -> {
+                    view.populateList(result.charityList)
+                }
+                else -> {
+                    view.displayNoData()
+                }
+            }
         }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onPresenterDestroy() {
-        getCharityListDisposable?.dispose()
     }
 }

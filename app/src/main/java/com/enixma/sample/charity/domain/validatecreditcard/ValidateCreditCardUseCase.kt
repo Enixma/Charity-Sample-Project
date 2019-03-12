@@ -2,6 +2,7 @@ package com.enixma.sample.charity.domain.validatecreditcard
 
 import co.omise.android.CardNumber
 import com.enixma.sample.charity.domain.UseCase
+import io.reactivex.Flowable
 import io.reactivex.Observable
 
 class ValidateCreditCardUseCase : UseCase<ValidateCreditCardUseCaseRequest, ValidateCreditCardUseCaseResult> {
@@ -18,7 +19,7 @@ class ValidateCreditCardUseCase : UseCase<ValidateCreditCardUseCaseRequest, Vali
         INVALID_LUHN
     }
 
-    override fun execute(request: ValidateCreditCardUseCaseRequest): Observable<ValidateCreditCardUseCaseResult> {
+    override fun execute(request: ValidateCreditCardUseCaseRequest): Flowable<ValidateCreditCardUseCaseResult> {
 
         val errorList = ArrayList<ERROR>()
         validateCard(request.cardNumber, errorList)
@@ -27,7 +28,7 @@ class ValidateCreditCardUseCase : UseCase<ValidateCreditCardUseCaseRequest, Vali
 
         return errorList.let {
             val status = if (it.isEmpty()) STATUS.VALID else STATUS.INVALID
-            Observable.just(ValidateCreditCardUseCaseResult(status).apply { this.errorList = it })
+            Flowable.just(ValidateCreditCardUseCaseResult(status).apply { this.errorList = it })
         }
     }
 

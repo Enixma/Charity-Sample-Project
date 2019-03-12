@@ -41,7 +41,7 @@ class CharityListFragment : Fragment(), CharityListContract.View {
         DaggerCharityListComponent.builder()
                 .serviceFactoryModule(ServiceFactoryModule(activity))
                 .charityDataModule(CharityDataModule(activity))
-                .charityListModule(CharityListModule(this))
+                .charityListModule(CharityListModule(this, this))
                 .build().inject(this)
     }
 
@@ -54,7 +54,6 @@ class CharityListFragment : Fragment(), CharityListContract.View {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        lifecycle.addObserver(presenter as CharityListPresenter)
         binding.swipe.setOnRefreshListener { presenter.getCharityList() }
         binding.swipe.isRefreshing = true
         presenter.getCharityList()

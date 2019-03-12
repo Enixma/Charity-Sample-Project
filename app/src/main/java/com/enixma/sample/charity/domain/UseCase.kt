@@ -1,10 +1,10 @@
 package com.enixma.sample.charity.domain
 
-import io.reactivex.Observable
+import io.reactivex.Flowable
 
 interface UseCase<in P : UseCase.Request, Q : UseCase.Result> {
 
-    fun execute(request: P): Observable<Q>
+    fun execute(request: P): Flowable<Q>
 
     interface Request
 
