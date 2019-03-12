@@ -26,21 +26,18 @@ class CharityListPresenter(private val view: CharityListContract.View,
             return
         }
 
-        result = LiveDataReactiveStreams
-                .fromPublisher(getCharityListUseCase.execute(GetCharityListUseCaseRequest()))
-
+        result = LiveDataReactiveStreams.fromPublisher(getCharityListUseCase.execute(GetCharityListUseCaseRequest()))
         result.observe(lifecycleOwner, resultObserver)
-
     }
 
     private fun processGetCharityListResult(result: GetCharityListUseCaseResult?) {
         result?.let {
-            when (result.status) {
+            when (it.status) {
                 GetCharityListUseCase.STATUS.LOADING -> {
                     // do nothing
                 }
                 GetCharityListUseCase.STATUS.SUCCESS -> {
-                    view.populateList(result.charityList)
+                    view.populateList(it.charityList)
                 }
                 else -> {
                     view.displayNoData()

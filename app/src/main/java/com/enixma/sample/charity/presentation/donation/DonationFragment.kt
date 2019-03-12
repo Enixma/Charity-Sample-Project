@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import co.omise.android.models.Token
 import com.bumptech.glide.Glide
+import com.enixma.sample.charity.BuildConfig
 import com.enixma.sample.charity.R
 import com.enixma.sample.charity.data.di.ServiceFactoryModule
 import com.enixma.sample.charity.data.di.CharityDataModule
@@ -21,6 +22,7 @@ import com.enixma.sample.charity.presentation.creditcard.AddCreditCardActivity
 import com.enixma.sample.charity.presentation.donation.di.DaggerDonationComponent
 import com.enixma.sample.charity.presentation.donation.di.DonationModule
 import com.enixma.sample.charity.presentation.success.SuccessActivity
+import org.json.JSONObject
 import javax.inject.Inject
 
 
@@ -61,7 +63,7 @@ class DonationFragment : Fragment(), DonationContract.View {
         DaggerDonationComponent.builder()
                 .serviceFactoryModule(ServiceFactoryModule(activity))
                 .charityDataModule(CharityDataModule(activity))
-                .donationModule(DonationModule(this, viewModel))
+                .donationModule(DonationModule(this, this, viewModel))
                 .build().inject(this)
     }
 
@@ -74,7 +76,6 @@ class DonationFragment : Fragment(), DonationContract.View {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        lifecycle.addObserver(presenter as DonationPresenter)
         initProgressDialog()
         initDonationAmountSelection()
         populateImage()
@@ -82,7 +83,13 @@ class DonationFragment : Fragment(), DonationContract.View {
             displayAmountSelectionDialog()
         }
         binding.buttonDonate.setOnClickListener {
-            displayConfirmDialog()
+            if(!BuildConfig.DEBUG){
+                displayConfirmDialog()
+            } else {
+                // skip add credit card
+                presenter.donate(Token(JSONObject()))
+                progressDialog.show()
+            }
         }
     }
 

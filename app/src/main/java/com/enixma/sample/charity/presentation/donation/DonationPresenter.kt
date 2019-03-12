@@ -1,8 +1,7 @@
 package com.enixma.sample.charity.presentation.donation
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.*
+import android.util.Log
 import co.omise.android.models.Token
 import com.enixma.sample.charity.data.entity.DonationEntity
 import com.enixma.sample.charity.domain.createdonation.CreateDonationUseCase
@@ -11,40 +10,49 @@ import com.enixma.sample.charity.domain.createdonation.CreateDonationUseCaseResu
 import io.reactivex.disposables.Disposable
 
 class DonationPresenter(private val view: DonationContract.View,
+                        private val lifecycleOwner: LifecycleOwner,
                         private val viewModel: DonationViewModel,
-                        private val createDonationUseCase: CreateDonationUseCase) : DonationContract.Action, LifecycleObserver {
+                        private val createDonationUseCase: CreateDonationUseCase) : DonationContract.Action {
 
-    private var createDonationDisposable: Disposable? = null
-    private var isLoading: Boolean = false
+    private var result: LiveData<CreateDonationUseCaseResult> = MutableLiveData()
+    private var resultObserver: Observer<CreateDonationUseCaseResult>
+
+    init {
+        resultObserver = Observer<CreateDonationUseCaseResult> { result ->
+            processDonationResult(result)
+        }
+    }
 
     override fun donate(token: Token) {
-        if (isLoading) {
+
+        if(result.value?.status == CreateDonationUseCase.STATUS.LOADING){
             return
         }
-        isLoading = true
 
         val request = DonationEntity().let {
             it.name = viewModel.name
-            it.token = token.id
+            it.token = token.id ?: ""
             it.amount = Integer.parseInt(viewModel.amount.get())
             CreateDonationUseCaseRequest(it)
         }
-        createDonationDisposable = createDonationUseCase.execute(request)
-                .doOnNext { result -> processDonationResult(result) }
-                .subscribe()
+
+        result = LiveDataReactiveStreams.fromPublisher(createDonationUseCase.execute(request))
+        result.observe(lifecycleOwner, resultObserver)
     }
 
-    private fun processDonationResult(result: CreateDonationUseCaseResult) {
-        isLoading = false
-        if (result.status == CreateDonationUseCase.STATUS.SUCCESS) {
-            view.goToSuccessScreen()
-        } else {
-            view.displayError(result.errorMessage)
+    private fun processDonationResult(result: CreateDonationUseCaseResult?) {
+        result?.let {
+            when(it.status) {
+                CreateDonationUseCase.STATUS.LOADING -> {
+                    // do nothing
+                }
+                CreateDonationUseCase.STATUS.SUCCESS -> {
+                    view.goToSuccessScreen()
+                }
+                else -> {
+                    view.displayError(it.errorMessage)
+                }
+            }
         }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onPresenterDestroy() {
-        createDonationDisposable?.dispose()
     }
 }
