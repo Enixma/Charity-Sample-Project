@@ -93,6 +93,14 @@ class DonationFragment : Fragment(), DonationContract.View {
         }
     }
 
+    override fun displayLoading() {
+        progressDialog.show()
+    }
+
+    override fun dismissLoading() {
+        progressDialog.dismiss()
+    }
+
     private fun initProgressDialog() {
         progressDialog = ProgressDialog(activity)
         progressDialog.setMessage(getString(R.string.alert_message_submit_donation))
@@ -148,12 +156,10 @@ class DonationFragment : Fragment(), DonationContract.View {
     }
 
     override fun goToSuccessScreen() {
-        progressDialog.dismiss()
         startActivityForResult(SuccessActivity.getIntent(activity, viewModel.name, viewModel.amount.get()), REQUEST_FINAL)
     }
 
     override fun displayError(errorMessage: String) {
-        progressDialog.dismiss()
         alertDialog = AlertDialog.Builder(activity).apply {
             var message = if (errorMessage.isNullOrBlank()) getString(R.string.alert_message_communication_error) else errorMessage
             this.setTitle(R.string.alert_title_error)

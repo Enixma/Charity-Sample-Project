@@ -5,7 +5,8 @@ import co.omise.android.models.Token
 interface DonationContract {
     interface View {
         fun displayError(errorMessage: String)
-
+        fun displayLoading()
+        fun dismissLoading()
         fun goToSuccessScreen()
     }
 

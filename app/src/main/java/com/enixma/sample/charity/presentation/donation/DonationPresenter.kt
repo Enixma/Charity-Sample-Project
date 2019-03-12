@@ -1,13 +1,11 @@
 package com.enixma.sample.charity.presentation.donation
 
 import android.arch.lifecycle.*
-import android.util.Log
 import co.omise.android.models.Token
 import com.enixma.sample.charity.data.entity.DonationEntity
 import com.enixma.sample.charity.domain.createdonation.CreateDonationUseCase
 import com.enixma.sample.charity.domain.createdonation.CreateDonationUseCaseRequest
 import com.enixma.sample.charity.domain.createdonation.CreateDonationUseCaseResult
-import io.reactivex.disposables.Disposable
 
 class DonationPresenter(private val view: DonationContract.View,
                         private val lifecycleOwner: LifecycleOwner,
@@ -44,12 +42,14 @@ class DonationPresenter(private val view: DonationContract.View,
         result?.let {
             when(it.status) {
                 CreateDonationUseCase.STATUS.LOADING -> {
-                    // do nothing
+                    view.displayLoading()
                 }
                 CreateDonationUseCase.STATUS.SUCCESS -> {
+                    view.dismissLoading()
                     view.goToSuccessScreen()
                 }
                 else -> {
+                    view.dismissLoading()
                     view.displayError(it.errorMessage)
                 }
             }
